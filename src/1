@@ -1,0 +1,55 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const binarizer_1 = require("./binarizer");
+const decoder_1 = require("./decoder/decoder");
+const extractor_1 = require("./extractor");
+const locator_1 = require("./locator");
+const fs = require('fs');
+const Jimp = require('jimp');
+
+
+function main() { 
+    var buffer = fs.readFileSync('./qrcode.jpg');
+    Jimp.read(buffer, function(err, data) {
+        if (err) {  
+            console.log(err);
+        }
+
+        console.log(data.bitmap);
+        var qrData = qrReader(data.bitmap.data, data.bitmap.width, data.bitmap.height);
+        console.log(qrData);
+    });
+}
+
+
+function qrReader(data, width, height) {
+    const binarized = binarizer_1.binarize(data, width, height);
+    const location = locator_1.locate(binarized);
+    if (!location) {
+        return console.log('Location Error');
+    }
+    const extracted = extractor_1.extract(binarized, location);
+    const decoded = decoder_1.decode(extracted.matrix);
+    if (!decoded) {
+        return console.log('Decoded Error');
+    }
+    return {
+        binaryData: decoded.bytes,
+        data: decoded.text,
+        chunks: decoded.chunks,
+        location: {
+            topRightCorner: extracted.mappingFunction(location.dimension, 0),
+            topLeftCorner: extracted.mappingFunction(0, 0),
+            bottomRightCorner: extracted.mappingFunction(location.dimension, location.dimension),
+            bottomLeftCorner: extracted.mappingFunction(0, location.dimension),
+            topRightFinderPattern: location.topRight,
+            topLeftFinderPattern: location.topLeft,
+            bottomLeftFinderPattern: location.bottomLeft,
+            bottomRightAlignmentPattern: location.alignmentPattern,
+        },
+    };
+}
+
+exports.default = qrReader;
+
+main();

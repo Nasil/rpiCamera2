@@ -1,0 +1,22 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QImage>
+#include <QPixmap>
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+ 
+    QString img_path = "./test.jpg";
+    QImage img(img_path);    
+    QPixmap buf = QPixmap::fromImage(img);
+ 
+    ui->label->setPixmap(buf);
+    ui->label->resize(buf.width(), buf.height());
+}
+ 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
