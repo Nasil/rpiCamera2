@@ -77,6 +77,8 @@ int convertHough(){
 
   LocateEdges(&an_image);
 
+    return 0;
+
   if (!WriteImage(output_file, an_image)){
     cout << "Can't write to file " << output_file << endl;
     return 0;

@@ -8,17 +8,21 @@ int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
     QLabel *label = new QLabel("test");
- 
+    QLabel *label2 = new QLabel("test_out");
+
     QImage image;
     QPixmap buffer;
- 
-    //image.load("/home/apps/AGV/src/camera/src/image/imgGrey1.pgm");
-    image.load("/home/apps/AGV/src/camera/cCamera/test_out.pgm");
-
-    buffer = QPixmap::fromImage(image);
     
-    label->setPixmap(buffer);                                                                               
-    label->show();
- 
+    image.load("/home/apps/AGV/src/camera/v4l2exec/image/binary1.pgm");
+    buffer = QPixmap::fromImage(image);
+    label->setPixmap(buffer);                                                                        label->show();
+    
+    
+    image.load("/home/apps/AGV/src/camera/v4l2exec/image/binary2.pbm");
+    buffer = QPixmap::fromImage(image);
+    label2->setPixmap(buffer);
+    label2->show();
+    label2->move(100, 50);
+
     return app.exec();
 } 

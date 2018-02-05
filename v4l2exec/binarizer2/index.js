@@ -25,7 +25,6 @@ function binarize(data, width, height) {
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
             greyscalePixels.set(x, y, data[width * y + x]);
-            //greyscalePixels.set(x, y, data[width * x + y]);
         }
     }
     const horizontalRegionCount = Math.ceil(width / REGION_SIZE);
@@ -59,6 +58,7 @@ function binarize(data, width, height) {
             blackPoints.set(hortizontalRegion, verticalRegion, average);
         }
     }
+
     const binarized = BitMatrix_1.BitMatrix.createEmpty(width, height);
     for (let verticalRegion = 0; verticalRegion < verticalRegionCount; verticalRegion++) {
         for (let hortizontalRegion = 0; hortizontalRegion < horizontalRegionCount; hortizontalRegion++) {

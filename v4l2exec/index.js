@@ -2,10 +2,7 @@
 
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-
-const binarizer_1 = require("./binarizer2");
-//const binarizer_1 = require("./binarizer");
+const binarizer_1 = require("./binarizer");
 const decoder_1 = require("./decoder/decoder");
 const extractor_1 = require("./extractor");
 const locator_1 = require("./locator");
@@ -19,7 +16,7 @@ const extend = require('util-extend');
 
 const width = 320;
 const height = 240;
-const MAX_LOOP_CNT = 30;
+const MAX_LOOP_CNT = 10;
 
 let cam = null;
 
@@ -49,7 +46,6 @@ function main() {
 	let cnt = 0;
 	cam.capture(function loop(sucess){
     	var frame = cam.frameRaw();
-        //console.log(frame);
         
         //--- QR decode ---
         var qrData = qrReader(frame, cam.width, cam.height);
@@ -62,7 +58,7 @@ function main() {
         
         //--- Time Check ---
     	let newTime = nowDate();
-    	console.log("총 시간 : " + (newTime - oldTime));
+    	console.log("==========총 시간 : " + (newTime - oldTime) + "========");
     	oldTime = newTime;
 
         if (cnt == MAX_LOOP_CNT) { 
@@ -141,12 +137,6 @@ function qrReader(data, width, height) {
     console.log("binarized :" + (nowDate() - oldTime));
     oldTime = nowDate();
     
-	//let fileName = 'binary1.pgm';
-    //fileWrite2Pgm(fileName, binarized.data, "P2");
-
-	//let fileName2 = 'binary2.pbm';
-    //fileWrite2Pgm(fileName2, binarized.data, "P1");
-
     // Locate
     const location = locator_1.locate(binarized);
     if (!location) {

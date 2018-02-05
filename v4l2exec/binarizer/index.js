@@ -20,18 +20,11 @@ class Matrix {
     }
 }
 function binarize(data, width, height) {
-    console.log(data);
-    if (data.length !== width * height * 4) {
-        throw new Error("Malformed data passed to binarizer.");
-    }
     // Convert image to greyscale
     const greyscalePixels = new Matrix(width, height);
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
-            const r = data[((y * width + x) * 4) + 0];
-            const g = data[((y * width + x) * 4) + 1];
-            const b = data[((y * width + x) * 4) + 2];
-            greyscalePixels.set(x, y, 0.2126 * r + 0.7152 * g + 0.0722 * b);
+            greyscalePixels.set(x, y, data[width * y + x]);
         }
     }
     const horizontalRegionCount = Math.ceil(width / REGION_SIZE);
@@ -52,19 +45,8 @@ function binarize(data, width, height) {
             }
             let average = sum / (Math.pow(REGION_SIZE, 2));
             if (max - min <= MIN_DYNAMIC_RANGE) {
-                // If variation within the block is low, assume this is a block with only light or only
-                // dark pixels. In that case we do not want to use the average, as it would divide this
-                // low contrast area into black and white pixels, essentially creating data out of noise.
-                //
-                // Default the blackpoint for these blocks to be half the min - effectively white them out
                 average = min / 2;
                 if (verticalRegion > 0 && hortizontalRegion > 0) {
-                    // Correct the "white background" assumption for blocks that have neighbors by comparing
-                    // the pixels in this block to the previously calculated black points. This is based on
-                    // the fact that dark barcode symbology is always surrounded by some amount of light
-                    // background for which reasonable black point estimates were made. The bp estimated at
-                    // the boundaries is used for the interior.
-                    // The (min < bp) is arbitrary but works better than other heuristics that were tried.
                     const averageNeighborBlackPoint = (blackPoints.get(hortizontalRegion, verticalRegion - 1) +
                         (2 * blackPoints.get(hortizontalRegion - 1, verticalRegion)) +
                         blackPoints.get(hortizontalRegion - 1, verticalRegion - 1)) / 4;
@@ -76,6 +58,7 @@ function binarize(data, width, height) {
             blackPoints.set(hortizontalRegion, verticalRegion, average);
         }
     }
+
     const binarized = BitMatrix_1.BitMatrix.createEmpty(width, height);
     for (let verticalRegion = 0; verticalRegion < verticalRegionCount; verticalRegion++) {
         for (let hortizontalRegion = 0; hortizontalRegion < horizontalRegionCount; hortizontalRegion++) {
