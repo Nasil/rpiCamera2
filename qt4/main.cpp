@@ -13,12 +13,13 @@ int main(int argc, char **argv)
     QImage image;
     QPixmap buffer;
     
-    image.load("/home/apps/AGV/src/camera/v4l2exec/image/binary1.pgm");
+    image.load("/home/apps/AGV/src/camera/aruco/image/imgGrey1.pgm");
     buffer = QPixmap::fromImage(image);
-    label->setPixmap(buffer);                                                                        label->show();
-    
-    
-    image.load("/home/apps/AGV/src/camera/v4l2exec/image/binary2.pbm");
+    label->setPixmap(buffer);                                                                        
+    label->show();
+   
+
+    image.load("/home/apps/AGV/src/camera/aruco/image/imgOtsu1.pgm");
     buffer = QPixmap::fromImage(image);
     label2->setPixmap(buffer);
     label2->show();

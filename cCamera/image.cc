@@ -198,16 +198,16 @@ void LocateEdges(Image *an_image){
       an_image->SetPixel(i,j,gradient_approximation);
     }
     
-    int diff1 = center_column - point1;
-    int diff2 = point2 - center_column;
+    //int diff1 = center_column - point1;
+    //int diff2 = point2 - center_column;
 
-	if (i < center_row && i > center_row/2) {
-    	if (diff1 < min_point && diff2 > max_point) {
-			cout << "[AGV] Turn Left : " << diff1 << ", " << diff2  << endl;
-	    } else if (diff1 > max_point && diff2 < min_point) {
-			cout << "[AGV] Turn Right : " << diff1 << ", " << diff2  << endl;
-    	}
-	} 
+	//if (i < center_row && i > center_row/2) {
+    //	if (diff1 < min_point && diff2 > max_point) {
+	//		cout << "[AGV] Turn Left : " << diff1 << ", " << diff2  << endl;
+	//    } else if (diff1 > max_point && diff2 < min_point) {
+	//		cout << "[AGV] Turn Right : " << diff1 << ", " << diff2  << endl;
+    //	}
+	//} 
 
   }
   

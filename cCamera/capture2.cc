@@ -77,8 +77,6 @@ int convertHough(){
 
   LocateEdges(&an_image);
 
-    return 0;
-
   if (!WriteImage(output_file, an_image)){
     cout << "Can't write to file " << output_file << endl;
     return 0;
@@ -195,7 +193,7 @@ static void mainloop(void)
             read_frame();
             convertHough();
 
-             // Time check end;
+            // Time check end;
 	        endTime = clock();
     	    float gap = (float)(endTime - startTime)/(CLOCKS_PER_SEC);
         	printf("시간 : %f sec \n", gap);
