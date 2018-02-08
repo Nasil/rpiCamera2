@@ -7,8 +7,7 @@ const decoder_1 = require("./decoder/decoder");
 const extractor_1 = require("./extractor");
 const locator_1 = require("./locator");
 const gradient_1 = require("./gradient");
-//const otsu_1 = require("./otsu");
-const otsu_1 = require("./otsu2");
+const otsu_1 = require("./otsu");
 
 const fs = require('fs');
 const child = require('child_process');
@@ -20,7 +19,7 @@ const extend = require('util-extend');
 
 const width = 320;
 const height = 240;
-const MAX_LOOP_CNT = 1;
+const MAX_LOOP_CNT = 10;
 
 let cam = null;
 
@@ -53,11 +52,12 @@ function main() {
         
 		//--- File write Original ---
         cnt++;
-		let fileNameOrg = 'imgGrey' + cnt + '.pgm';
-        fileWrite2Pgm(fileNameOrg, frame, "P5");
+		let fileName = 'imgGrey' + cnt + '.pgm';
+        fileWrite2Pgm(fileName, frame, "P5");
 
-        let otsuFrame = otsu_1.otsu2(frame, width, height);
-
+        const otsuFrame = otsu_1.otsu(frame, width, height);
+        const binarized = binarizer_1.binarize(frame, width, height);
+        
         //--- QR decode ---
         //var qrData = qrReader(frame, cam.width, cam.height);
         //console.log(qrData);
@@ -72,9 +72,11 @@ function main() {
     	oldTime = newTime;
 
         //--- File write New ---
-        let fileName = 'imgOtsu2' + cnt + '.pgm';
-        fileWrite2Pgm(fileName, otsuFrame, "P5");
-        
+        fileName = 'imgBinaryRight' + cnt + '.pgm';
+        fileWrite2Pgm(fileName, binarized.data, "P5");
+        //fileName = 'imgOtsu' + cnt + '.pgm';
+        //fileWrite2Pgm(fileName, otsuFrame, "P5");
+
         if (cnt == MAX_LOOP_CNT) { 
             process.exit(1);
         }
@@ -92,7 +94,7 @@ function fileWrite2Pgm(fileName, frame, imgType)
     if (imgType == "P4" || imgType == "P1") {
         header =  imgType + "\n" + "320 240\n";
     }
-
+    
     let bufPgm = bufConcat(new Buffer(header), new Buffer(frame));
     fs.writeFileSync('./image/' + fileName, bufPgm);
 	console.log("File Save : " + fileName);

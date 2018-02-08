@@ -20,7 +20,7 @@ class Matrix {
     }
 }
 function binarize(data, width, height) {
-    // Convert image to greyscale
+    console.time('binarize time ');
     const greyscalePixels = new Matrix(width, height);
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
@@ -79,6 +79,8 @@ function binarize(data, width, height) {
             }
         }
     }
+    
+    console.timeEnd('binarize time ');
     return binarized;
 }
 exports.binarize = binarize;

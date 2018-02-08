@@ -12,8 +12,7 @@ function createImg(frame, width, height) {
 }
 
 function histogram(image) {
-    let histogram = new Array(256);
-    histogram.fill(0);
+    let histogram = new Uint8ClampedArray(256);
 
     let maxCnt = image.width * image.height;
     for (let i = 0; i < maxCnt; i++) {
@@ -96,10 +95,9 @@ function buildTables(histogram)
 function otsuExec(histogram, classes)
 {
     maxSum = 0.;
-    thresholds = new Array(classes - 1);
-    thresholds.fill(0);
+    thresholds = new Uint8ClampedArray(classes - 1);
     let H = buildTables(histogram);
-    let index = new Array(classes + 1);
+    let index = new Uint8ClampedArray(classes + 1);
     index[0] = 0;
     index[index.length - 1] = histogram.length - 1;
 
@@ -115,6 +113,7 @@ function otsuExec(histogram, classes)
 
 function otsu(frame, width, height)
 {
+    console.time('otsu time ');
 	let img = createImg(frame, width, height);
     let hist = histogram(img);
 
@@ -124,11 +123,11 @@ function otsu(frame, width, height)
     console.log(thresholds);
 
     var dstData = img.data;
-    var colors = new Array(classes);
+    var colors = new Uint8ClampedArray(classes);
     for (var i = 0; i < classes; i++)
         colors[i] = Math.round(255 * i / (classes - 1));
 
-    var colorTable = new Array(256);
+    var colorTable = new Uint8ClampedArray(256);
     var j = 0;
 
     for (var i = 0; i < colorTable.length; i++) {
@@ -138,17 +137,17 @@ function otsu(frame, width, height)
         colorTable[i] = colors[j];
     }
 
-    for (var i = 0; i < dstData.length; i += 2) {
+    for (var i = 0; i < dstData.length; i++) {
         var luma = (  11 * dstData[i]
                     + 16 * dstData[i + 1]
                     +  5 * dstData[i + 2]) >> 5;
         luma = colorTable[luma];
 
         dstData[i]     = luma;
-        dstData[i + 1] = 255;
     }
 
-	console.log(dstData);
+
+    console.timeEnd('otsu time ');
 	return dstData;
 }
 
