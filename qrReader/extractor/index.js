@@ -78,13 +78,17 @@ function extract(image, location) {
             y: (transform.a12 * x + transform.a22 * y + transform.a32) / denominator,
         };
     };
+
+    let data = [];
     for (let y = 0; y < location.dimension; y++) {
         for (let x = 0; x < location.dimension; x++) {
             const xValue = x + 0.5;
             const yValue = y + 0.5;
             const sourcePixel = mappingFunction(xValue, yValue);
             matrix.set(x, y, image.get(Math.floor(sourcePixel.x), Math.floor(sourcePixel.y)));
+            data.push(image.get(Math.floor(sourcePixel.x), Math.floor(sourcePixel.y)));
         }
+        data = [];
     }
     return {
         matrix,

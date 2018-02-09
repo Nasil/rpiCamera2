@@ -67,9 +67,15 @@ function times(a, b) {
     };
 }
 function extract(image, location) {
-    const qToS = quadrilateralToSquare({ x: 3.5, y: 3.5 }, { x: location.dimension - 3.5, y: 3.5 }, { x: location.dimension - 6.5, y: location.dimension - 6.5 }, { x: 3.5, y: location.dimension - 3.5 });
-    const sToQ = squareToQuadrilateral(location.topLeft, location.topRight, location.alignmentPattern, location.bottomLeft);
+    console.log(location);
+    const pixelSize = 0;
+    const centerPoint = (location.pixelSize / 2) - 2; 
+    
+    const qToS = quadrilateralToSquare({ x: pixelSize, y: pixelSize }, { x: location.dimension - pixelSize, y: pixelSize }, { x: location.dimension - pixelSize, y: location.dimension - pixelSize }, { x: pixelSize, y: location.dimension - pixelSize });
+    const sToQ = squareToQuadrilateral(location.topLeft, location.topRight, location.bottomRight, location.bottomLeft);
+
     const transform = times(sToQ, qToS);
+    
     const matrix = BitMatrix_1.BitMatrix.createEmpty(location.dimension, location.dimension);
     const mappingFunction = (x, y) => {
         const denominator = transform.a13 * x + transform.a23 * y + transform.a33;
@@ -78,17 +84,21 @@ function extract(image, location) {
             y: (transform.a12 * x + transform.a22 * y + transform.a32) / denominator,
         };
     };
+
+    let data = [];
     for (let y = 0; y < location.dimension; y++) {
         for (let x = 0; x < location.dimension; x++) {
-            const xValue = x + 0.5;
-            const yValue = y + 0.5;
+            const xValue = x;
+            const yValue = y;
             const sourcePixel = mappingFunction(xValue, yValue);
-            matrix.set(x, y, image.get(Math.floor(sourcePixel.x), Math.floor(sourcePixel.y)));
+            //console.log((sourcePixel.y + centerPoint) + ", " + (sourcePixel.x + centerPoint));
+            matrix.set(x, y, image.get(Math.ceil(sourcePixel.x), Math.ceil(sourcePixel.y)));
+            data.push(image.get(Math.floor(sourcePixel.x + centerPoint), Math.floor(sourcePixel.y + centerPoint)));
         }
+        console.log(data);
+        data = [];
     }
-    return {
-        matrix,
-        mappingFunction,
-    };
+
+    return matrix;
 }
 exports.extract = extract;

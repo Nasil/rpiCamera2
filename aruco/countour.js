@@ -3,7 +3,7 @@
 'use strict';
 
 const fs = require('fs');
-const makesquire_1 = require('./makeSqure');
+const extractor_1 = require("./extractor");
 
 let width = 320;
 let height = 240;
@@ -44,26 +44,59 @@ function readImg(fileName) {
 }
 
 
-let topRight = {x : height, y : width};
-let topLeft = {x : height, y : width};
-let bottomLeft = {x : 0, y : 0};
-let bottomRight = {x : 0, y : 0};
 const pixelTotal = 8;
-let topDimension = 0;
-let sideDimension = 0;
-let dimension = 0;
 let matrix;
 
 function main(fileName) {
+
+	// Read Image
 	matrix = new Matrix(width, height, readImg(fileName));
-    findPoint();
-    //extract();
-    decode();
+    if (matrix.length < 0) {
+        return;
+    }
+
+	// Find Point
+	const location = findLocation();
+    if (location == 1) {
+        return;
+    }
+
+    // Location
+    let location2 = {
+        topLeft: { y: location.topLeft.x, x: location.topLeft.y },
+        topRight: { y: location.topRight.x, x: location.topRight.y },
+        bottomLeft: { y: location.bottomLeft.x, x: location.bottomLeft.y },
+        bottomRight: { y: location.bottomRight.x, x: location.bottomRight.y},
+        dimension: pixelTotal,
+        pixelSize: location.pixelSize
+    };
+    const newMatrix = extractor_1.extract(matrix, location2);
+    let data = [];
+    for (let i = 0; i < pixelTotal; i++) {
+        for(let j = 0; j < pixelTotal; j++) {
+            data.push(newMatrix[i * pixelTotal + j]);
+        }
+        if(testResult(data, i)===false) {
+            console.log('Error ' + i);
+        }
+        data = [];
+    }
+
+	// Decode
+    //decode(location);
 }
 
-function findPoint() {
-    for (let i = 0; i < height; i++) {
-        for (let j = 0; j < width; j++) {
+function findLocation() {
+    let topRight = {x : height, y : width};
+    let topLeft = {x : height, y : width};
+    let bottomLeft = {x : 0, y : 0};
+    let bottomRight = {x : 0, y : 0};
+	let topDimension = 0;
+    let sideDimension = 0;
+    let pixelSize = 0;
+
+    for (let i = 20; i < height-20; i++) {
+        for (let j = 20; j < width-20; j++) {
             if (matrix.get(j, i) == 1) {
                 if (topRight.x >= i ) {
                     topRight.x = i;
@@ -85,47 +118,47 @@ function findPoint() {
         }
     }
 
-	topDimension = Math.floor(distance(topLeft, topRight) / pixelTotal);
-    sideDimension = Math.floor(distance(topLeft, bottomLeft) / pixelTotal);
-    dimension = Math.max(topDimension, sideDimension);
-
-}
-
-function extract() {
-	const bottomRightFinderPattern = {
-        x: topRight.x - topLeft.x + bottomLeft.x,
-        y: topRight.y - topLeft.y + bottomLeft.y,
-    };
-    const modulesBetweenFinderPatterns = ((distance(topLeft, bottomLeft) + distance(topLeft, topRight)) / 2 / moduleSize);
-
-    const correctionToTopLeft = 1 - (3 / modulesBetweenFinderPatterns);
-    const expectedAlignmentPattern = {
-        x: topLeft.x + correctionToTopLeft * (bottomRightFinderPattern.x - topLeft.x),
-        y: topLeft.y + correctionToTopLeft * (bottomRightFinderPattern.y - topLeft.y),
-    };
- 
-
-    let location = {
-        alignmentPattern: { x: alignmentPattern.x, y: alignmentPattern.y },
-        bottomLeft: { x: bottomLeft.x, y: bottomLeft.y },
-        dimension,
-        topLeft: { x: topLeft.x, y: topLeft.y },
-        topRight: { x: topRight.x, y: topRight.y },
+    if (topRight.x == height || topRight.y == width ||
+        topLeft.x == height || topLeft.y == width ||
+        bottomRight.x == 0 || bottomRight.y == 0||
+        bottomLeft.x == 0 || bottomLeft.y == 0) {
+        console.log("Outer out");
+        return false;
     }
 
-    console.log(location);
-    //makesqure_1.extract();
+	topDimension = distance(topLeft, topRight);
+    sideDimension = distance(topLeft, bottomLeft);
+    pixelSize = Math.max(Math.floor(topDimension/pixelTotal), Math.floor(sideDimension/pixelTotal));
+    
+    if (Math.abs(topDimension - sideDimension) > pixelSize) {
+        console.log("Outer out");
+        return false;
+    }
+
+    
+    let location = {
+        topLeft: { x: topLeft.x, y: topLeft.y },
+        topRight: { x: topRight.x, y: topRight.y },
+        bottomLeft: { x: bottomLeft.x, y: bottomLeft.y },
+        bottomRight: { x: bottomRight.x, y: bottomRight.y},
+        dimension: pixelTotal,
+        pixelSize
+    }
+
+
+    return location;
 }
 
-function decode() {
+function decode(location) {
 
     let data = [];
 	let cnt = 0;
 
-	let startX = Math.min(topLeft.x, topRight.x);
-    let startY = Math.min(topLeft.y, bottomLeft.y);
-    let endX = Math.max(bottomLeft.x, bottomRight.x);
-    let endY = Math.max(topRight.y, bottomRight.y);
+    const pixelSize = location.pixelSize;
+	const startX = Math.min(location.topLeft.x, location.topRight.x);
+    const startY = Math.min(location.topLeft.y, location.bottomLeft.y);
+    const endX = Math.max(location.bottomLeft.x,location.bottomRight.x);
+    const endY = Math.max(location.topRight.y,location.bottomRight.y);
 
     for (let i = startX; i < endX; i++) {
         for (let j = startY; j < endY; j++) {
@@ -133,16 +166,16 @@ function decode() {
             let sum = 0;
             let min = Infinity;
             let max = 0;
-            for (let y = 0; y < dimension; y++) {
-                for (let x =0; x < dimension; x++) {
+            for (let y = 0; y < pixelSize; y++) {
+                for (let x =0; x < pixelSize; x++) {
                     const pixelLum = matrix.get(j+x, i+y);
                     sum += pixelLum;
                 }
             }
-            j = j + dimension;
+            j = j + pixelSize;
 
             // Get Pixcel average data
-            let average = sum / (Math.pow(dimension, 2));
+            let average = sum / (Math.pow(pixelSize, 2));
             let setPixel = (average < 0.5) ? 0 : 1;
             data.push(setPixel);
         }
@@ -163,7 +196,7 @@ function decode() {
         cnt++;
         console.log(data);
         data =[];
-        i = i + dimension;
+        i = i + pixelSize;
     }
 }
 
@@ -190,13 +223,17 @@ function testResult(data, index){
 	return true;
 }
 
-main('./image/imgBinary2.pgm');
-main('./image/imgBinary3.pgm');
-main('./image/imgBinary4.pgm');
-main('./image/imgBinary5.pgm');
-main('./image/imgBinary6.pgm');
-main('./image/imgBinary7.pgm');
-main('./image/imgBinary8.pgm');
-main('./image/imgBinary9.pgm');
-main('./image/imgBinary10.pgm');
+//main('./image/imgBinary2.pgm');
+//main('./image/imgBinary3.pgm');
+//main('./image/imgBinary4.pgm');
+//main('./image/imgBinary5.pgm');
+//main('./image/imgBinary6.pgm');
 
+
+main('./image/imgBinaryLeft5.pgm');
+//main('./image/imgBinary7.pgm');
+//main('./image/imgBinary8.pgm');
+//main('./image/imgBinary9.pgm');
+//main('./image/imgBinary10.pgm');
+
+//main('./image/imgBinaryOuter6.pgm');
