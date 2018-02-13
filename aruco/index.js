@@ -72,7 +72,8 @@ function main() {
     	oldTime = newTime;
 
         //--- File write New ---
-        fileName = 'imgBinaryFar' + cnt + '.pgm';
+        fileName = 'imgBottomLeft' + cnt + '.pgm';
+
         fileWrite2Pgm(fileName, binarized.data, "P5");
         //fileName = 'imgOtsu' + cnt + '.pgm';
         //fileWrite2Pgm(fileName, otsuFrame, "P5");
