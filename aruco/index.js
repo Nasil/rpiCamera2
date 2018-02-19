@@ -2,16 +2,12 @@
 
 "use strict";
 
-const binarizer_1 = require("./binarizer");
-const decoder_1 = require("./decoder/decoder");
-const extractor_1 = require("./extractor");
-const locator_1 = require("./locator");
-const gradient_1 = require("./gradient");
-const otsu_1 = require("./otsu");
+const binarizer = require("./binarizer");
+const otsu = require("./otsu");
+const detector = require("./detector");
 
 const fs = require('fs');
 const child = require('child_process');
-const jpeg = require('jpeg-js');
 const v4l2camera = require('.././v4l2camera');
 const device = '/dev/video0';
 const util = require('util');
@@ -19,21 +15,21 @@ const extend = require('util-extend');
 
 const width = 320;
 const height = 240;
+const pixelTotal = 8;
 const MAX_LOOP_CNT = 10;
-
 let cam = null;
 
 function main() {
 
     try {
     	cam = new v4l2camera.Camera(device);
-	} catch (err) {
+    } catch (err) {
     	console.log('v4l2camera error');
     	process.exit(1);
-	}
+    }
 
     if (cam) {
-	    console.log('open camera device:' + device);
+        console.log('open camera device:' + device);
     }
 
 	cam.configSet({
@@ -45,40 +41,27 @@ function main() {
 
     cam.start();
 
-	let oldTime = nowDate();
 	let cnt = 0;
 	cam.capture(function loop(sucess){
     	let frame = cam.frameRaw();
-        
+
 		//--- File write Original ---
         cnt++;
 		let fileName = 'imgGrey' + cnt + '.pgm';
         fileWrite2Pgm(fileName, frame, "P5");
 
-        const otsuFrame = otsu_1.otsu(frame, width, height);
-        const binarized = binarizer_1.binarize(frame, width, height);
-        
-        //--- QR decode ---
-        //var qrData = qrReader(frame, cam.width, cam.height);
-        //console.log(qrData);
+        // Binarized
+        //const otsuFrame = otsu.otsu(frame, width, height);
+        const binarized = binarizer.binarize(frame, width, height);
 
-        //--- Gradient ---
-        //let frameGradient = frame; 
-        //gradient_1.gradient(frameGradient, width, height);
-
-        //--- Time Check ---
-    	let newTime = nowDate();
-    	console.log("==========총 시간 : " + (newTime - oldTime) + "========");
-    	oldTime = newTime;
+        // Market read
+        const detect = detector.detect(binarized.data, binarized.width, binarized.height, pixelTotal);
 
         //--- File write New ---
-        fileName = 'imgBottomLeft' + cnt + '.pgm';
-
+        fileName = 'img2_' + cnt + '.pgm';
         fileWrite2Pgm(fileName, binarized.data, "P5");
-        //fileName = 'imgOtsu' + cnt + '.pgm';
-        //fileWrite2Pgm(fileName, otsuFrame, "P5");
 
-        if (cnt == MAX_LOOP_CNT) { 
+        if (cnt == MAX_LOOP_CNT) {
             process.exit(1);
         }
 
@@ -95,7 +78,7 @@ function fileWrite2Pgm(fileName, frame, imgType)
     if (imgType == "P4" || imgType == "P1") {
         header =  imgType + "\n" + "320 240\n";
     }
-    
+
     let bufPgm = bufConcat(new Buffer(header), new Buffer(frame));
     fs.writeFileSync('./image/' + fileName, bufPgm);
 	console.log("File Save : " + fileName);
@@ -138,54 +121,4 @@ function get(x, y) {
   return this.buf[y*this.width + x]
 }
 
-
-function qrReader(data, width, height) {
-
-    // Binarized 
-	var oldTime = nowDate();
-    const binarized = binarizer_1.binarize(data, width, height);
-    console.log("binarized :" + (nowDate() - oldTime));
-    oldTime = nowDate();
-    
-    // Locate
-    const location = locator_1.locate(binarized);
-    if (!location) {
-        return console.log('Location Error');
-    }
-    console.log("lacate : " + (nowDate() - oldTime));
-    oldTime = nowDate();
-
-    // Extract
-    const extracted = extractor_1.extract(binarized, location);
-	console.log("Extract : " + (nowDate() - oldTime));
-    oldTime = nowDate();
-    
-    //Decode 
-	const decoded = decoder_1.decode(extracted.matrix);
-    if (!decoded) {
-        return console.log('Decoded Error');
-    }
-    console.log("Decod : " + (nowDate() - oldTime));
-
-    return {
-        data: decoded.text,
-        chunks: decoded.chunks,
-        location: {
-            //topRightCorner: extracted.mappingFunction(location.dimension, 0),
-            //bottomRightCorner: extracted.mappingFunction(location.dimension, location.dimension),
-            //bottomLeftCorner: extracted.mappingFunction(0, location.dimension),
-            topRightFinderPattern: location.topRight,
-            topLeftFinderPattern: location.topLeft,
-            bottomLeftFinderPattern: location.bottomLeft,
-            //bottomRightAlignmentPattern: location.alignmentPattern,
-        },
-    };
-}
-
-
-function nowDate() {
-    return new Date().getTime();
-}
-
-//qrImgRead();
 main();
