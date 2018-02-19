@@ -58,7 +58,7 @@ function main() {
         const detect = detector.detect(binarized.data, binarized.width, binarized.height, pixelTotal);
 
         //--- File write New ---
-        fileName = 'img3_' + cnt + '.pgm';
+        fileName = 'imgTmp_' + cnt + '.pgm';
         fileWrite2Pgm(fileName, binarized.data, "P5");
 
         if (cnt == MAX_LOOP_CNT) {
