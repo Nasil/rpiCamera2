@@ -16,7 +16,7 @@ const extend = require('util-extend');
 const width = 320;
 const height = 240;
 const pixelTotal = 7;
-const MAX_LOOP_CNT = 10000;
+const MAX_LOOP_CNT = 10;
 let cam = null;
 
 function bufConcat(a, b) {
@@ -53,8 +53,8 @@ function main() {
         cnt++;
         
         // Greyscale Image Save
-        //let fileName = 'imgGrey' + cnt + '.pgm';
-        //fileWrite2Pgm(fileName, frame, "P5");
+        let fileName = 'imgGrey' + cnt + '.pgm';
+        fileWrite2Pgm(fileName, frame, "P5");
 
         // Binarized
         //const otsuFrame = otsu.otsu(frame, width, height);
@@ -64,7 +64,7 @@ function main() {
         const detect = detector.detect(binarized.data, width, height, pixelTotal);
 
         //--- File write New ---
-        //fileName = 'imgBinaryFar' + cnt + '.pgm';
+        //fileName = 'imgBinary5_' + cnt + '.pgm';
         //fileWrite2Pgm(fileName, binarized.data, "P5");
         
         
