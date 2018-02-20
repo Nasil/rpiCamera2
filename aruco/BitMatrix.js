@@ -15,8 +15,14 @@ class BitMatrix {
         }
         return this.data[y * this.width + x];
     }
-    set(x, y, v) {
+    setGrey(x, y, v) {
         this.data[y * this.width + x] = v ? 255 : 0;
+    }
+    set(x, y, v) {
+        this.data[y * this.width + x] = v ? 1 : 0;
+    }
+    setReverse(x, y, v) {
+        this.data[y * this.width + x] = v ? 0 : 1;
     }
     setRegion(left, top, width, height, v) {
         for (let y = top; y < top + height; y++) {

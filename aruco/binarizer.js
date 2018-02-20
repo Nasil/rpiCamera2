@@ -1,12 +1,13 @@
 "use strict";
 
-const BitMatrix_1 = require("../BitMatrix");
+const BitMatrix_1 = require("./BitMatrix");
 const REGION_SIZE = 8;
 const MIN_DYNAMIC_RANGE = 24;
+
 function numBetween(value, min, max) {
     return value < min ? min : value > max ? max : value;
 }
-// Like BitMatrix but accepts arbitry Uint8 values
+
 class Matrix {
     constructor(width, height) {
         this.width = width;
@@ -19,8 +20,8 @@ class Matrix {
         this.data[y * this.width + x] = value;
     }
 }
+
 function binarize(data, width, height) {
-    console.time('binarize time ');
     const greyscalePixels = new Matrix(width, height);
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
@@ -79,8 +80,8 @@ function binarize(data, width, height) {
             }
         }
     }
-    
-    console.timeEnd('binarize time ');
+
     return binarized;
 }
+
 exports.binarize = binarize;

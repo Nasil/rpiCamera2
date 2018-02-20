@@ -15,9 +15,16 @@ const extend = require('util-extend');
 
 const width = 320;
 const height = 240;
-const pixelTotal = 8;
+const pixelTotal = 7;
 const MAX_LOOP_CNT = 10;
 let cam = null;
+
+function bufConcat(a, b) {
+    var result = new Buffer(a.length + b.length)
+    a.copy(result);
+    b.copy(result, a.length);
+    return result;
+}
 
 function main() {
 
@@ -37,35 +44,35 @@ function main() {
         height:height
     });
 
-    console.log(cam.configGet());
-
+    //console.log(cam.configGet());
     cam.start();
 
 	let cnt = 0;
 	cam.capture(function loop(sucess){
-    	let frame = cam.frameRaw();
-
-		//--- File write Original ---
+        let frame = cam.frameRaw();
         cnt++;
-		let fileName = 'imgGrey' + cnt + '.pgm';
-        fileWrite2Pgm(fileName, frame, "P5");
+        
+        // Greyscale Image Save
+        //let fileName = 'imgGrey' + cnt + '.pgm';
+        //fileWrite2Pgm(fileName, frame, "P5");
 
         // Binarized
         //const otsuFrame = otsu.otsu(frame, width, height);
         const binarized = binarizer.binarize(frame, width, height);
 
         // Market read
-        const detect = detector.detect(binarized.data, binarized.width, binarized.height, pixelTotal);
+        const detect = detector.detect(binarized.data, width, height, pixelTotal);
 
         //--- File write New ---
-        fileName = 'imgTmp_' + cnt + '.pgm';
-        fileWrite2Pgm(fileName, binarized.data, "P5");
-
+        //fileName = 'imgBinaryFar' + cnt + '.pgm';
+        //fileWrite2Pgm(fileName, binarized.data, "P5");
+        
+        
         if (cnt == MAX_LOOP_CNT) {
             process.exit(1);
         }
 
-    	cam.capture(loop);
+        cam.capture(loop);
 	});
 }
 
@@ -84,41 +91,5 @@ function fileWrite2Pgm(fileName, frame, imgType)
 	console.log("File Save : " + fileName);
 }
 
-
-// === helpers ===
-function bufEq(a, b) {
-  if (a.length !== b.length) return false
-  for (var i=0; i<a.length; i++)
-    if (a[i] !== b[i]) return false
-  return true
-}
-
-function indexOf(arraylike, target, needed) {
-  for (var i=0; i<arraylike.length; i++)
-    if (arraylike[i] === target)
-      return i
-  if (needed)
-    throw new Error('needed thing not found')
-  return -1
-}
-
-function char(str) {
-  return str.charCodeAt(str)
-}
-
-function bufConcat(a, b) {
-  var result = new Buffer(a.length + b.length)
-  a.copy(result);
-  b.copy(result, a.length);
-  return result;
-}
-
-function set(x, y, value) {
-  this.buf[y*this.width + x] = value
-}
-
-function get(x, y) {
-  return this.buf[y*this.width + x]
-}
 
 main();
