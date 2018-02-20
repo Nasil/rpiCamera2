@@ -16,7 +16,7 @@ const extend = require('util-extend');
 const width = 320;
 const height = 240;
 const pixelTotal = 7;
-const MAX_LOOP_CNT = 30;
+const MAX_LOOP_CNT = 10000;
 let cam = null;
 
 function bufConcat(a, b) {
@@ -68,9 +68,9 @@ function main() {
         //fileWrite2Pgm(fileName, binarized.data, "P5");
         
         
-        //if (cnt == MAX_LOOP_CNT) {
-        //    process.exit(1);
-        //}
+        if (cnt == MAX_LOOP_CNT) {
+            process.exit(1);
+        }
 
         cam.capture(loop);
 	});

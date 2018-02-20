@@ -6,13 +6,13 @@ function decode(matrix, pixelTotal) {
     let data = []
 
     // TO-DO 검증용
-    for (let i = 0; i < pixelTotal; i++) {
-        for (let j = 0; j < pixelTotal; j++) {
-            data.push(matrix.get(j,i));
-        }
-        console.log(data);
-        data = [];
-    }
+    //for (let i = 0; i < pixelTotal; i++) {
+    //     for (let j = 0; j < pixelTotal; j++) {
+    //        data.push(matrix.get(j,i));
+    //    }
+    //    console.log(data);
+    //    data = [];
+    //}
 
     // dictionary 값 대로 읽기
 	let id = readId(matrix.data, pixelTotal);
@@ -21,12 +21,9 @@ function decode(matrix, pixelTotal) {
 }
 
 function findDictionaray(data) {
-
     //console.log(data);
-
     let dictionary = Dictionary.getDictionary();
     let maxLength = dictionary.length, angleLength = 4;
-
     for (let i = 0; i < maxLength; i++) {
         for (let j = 0; j < angleLength; j++) {
             if (dictionary[i][j][0] == data[0] && dictionary[i][j][1] == data[1]) {
@@ -38,18 +35,19 @@ function findDictionaray(data) {
         }
     }
 
-
 	return false;
 }
 
+
 function readId(bits, pixelTotal) {
-    let id = 0, bitData = [], i, j, cnt = 0;
+    let id = 0, bit = 0, bitData = [], i, j, cnt = 0;
+    let reverse = (bits[0] == 0 && bits[3] == 0) ? false : true;
 
     for (i = 1; i < pixelTotal-1; ++i) {
         for (j = 1; j < pixelTotal-1; ++j) {
             id <<= 1;
-            let bit = bits[i * pixelTotal + j];  
-            id != bit;
+            bit = (reverse === true) ? 1-bits[i * pixelTotal + j] : bits[i * pixelTotal + j];
+            id |= bit;
             cnt++;
             if (cnt == 8) {
                 cnt = 0;
@@ -58,10 +56,14 @@ function readId(bits, pixelTotal) {
             }
         }
     }
-
-    bitData.push(bits[bits.length - (pixelTotal + 2)]);
-
-    return findDictionaray(bitData);
+ 
+    let lastBit = bits[bits.length - (pixelTotal + 2)];
+    if (reverse === true) {
+        lastBit = 1 - lastBit;
+    }
+    bitData.push(lastBit);
+   
+	return findDictionaray(bitData);
 }
 
 exports.decode = decode;

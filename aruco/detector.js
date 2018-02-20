@@ -52,18 +52,20 @@ function detect(data, width, height, pixelTotal) {
     }
 
     // Find Corner Point
-    console.time("Location time ");
+    //console.time("Location time ");
     const location = Locator.location(matrix, pixelTotal);
 
     // Extract
     for (let i = 0; i < location.length; i++) {
         markerMatrix = Extractor.extract(matrix, location[i]);
         id = Decoder.decode(markerMatrix, pixelTotal);
-        console.log(id);
+        if (id !== false) {
+            console.log(id);
+        }
     }
 
 
-    console.timeEnd("Location time ");
+    //console.timeEnd("Location time ");
     return id;
 }
 
