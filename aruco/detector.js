@@ -35,7 +35,7 @@ function readImg(fileName, width, height) {
     let j = 0;
 
     for (var i = startInx; i < length; i++) {
-        let val = (frame[i] === 255) ? 0 : 1;
+        let val = (frame[i] === 255) ? 1 : 0;
         frameBinary[j] = val;
         j++;
     }
@@ -68,8 +68,6 @@ function detect(data, width, height, pixelTotal) {
 }
 
 // TO-DO For Test
-//detect('./image/img1_7.pgm', 320, 240, 7);
 //detect('./image/img2_3.pgm', 320, 240, 7);
-//detect('./image/img3_7.pgm', 320, 240, 7);
 
 exports.detect = detect;
