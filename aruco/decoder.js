@@ -6,13 +6,13 @@ function decode(matrix, pixelTotal) {
     let data = []
 
     // TO-DO 검증용
-    //for (let i = 0; i < pixelTotal; i++) {
-    //     for (let j = 0; j < pixelTotal; j++) {
-    //        data.push(matrix.get(j,i));
-    //    }
-    //    console.log(data);
-    //    data = [];
-    //}
+    for (let i = 0; i < pixelTotal; i++) {
+        for (let j = 0; j < pixelTotal; j++) {
+           data.push(matrix.get(j,i));
+       }
+       console.log(data);
+       data = [];
+    }
 
     // dictionary 값 대로 읽기
 	let id = readId(matrix.data, pixelTotal);
@@ -56,13 +56,13 @@ function readId(bits, pixelTotal) {
             }
         }
     }
- 
+
     let lastBit = bits[bits.length - (pixelTotal + 2)];
     if (reverse === true) {
         lastBit = 1 - lastBit;
     }
     bitData.push(lastBit);
-   
+
 	return findDictionaray(bitData);
 }
 

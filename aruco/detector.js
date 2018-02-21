@@ -6,6 +6,7 @@ const fs = require('fs');
 const Extractor = require("./extractor");
 const Locator = require("./locator");
 const Decoder = require("./decoder");
+const Decoder2 = require("./decoder2");
 
 let matrix;
 
@@ -44,7 +45,7 @@ function readImg(fileName, width, height) {
 }
 
 function detect(data, width, height, pixelTotal) {
-    let i, markerMatrix, id;
+    let i, markerMatrix, markerData, markers = [];
     //matrix = new Matrix(width, height, readImg(data, width, height));
     matrix = new Matrix(width, height, data);
     if (matrix.length < 0) {
@@ -52,24 +53,29 @@ function detect(data, width, height, pixelTotal) {
     }
 
     // Find Corner Point
-    //console.time("Location time ");
     const location = Locator.location(matrix, pixelTotal);
 
-    // Extract
+    // Extract & Read
     for (let i = 0; i < location.length; i++) {
-        markerMatrix = Extractor.extract(matrix, location[i]);
-        id = Decoder.decode(markerMatrix, pixelTotal);
-        if (id !== false) {
-            console.log(id);
-        }
+
+        // case 1
+        //markerMatrix = Extractor.extract(matrix, location[i], pixelTotal);
+        //markerData = Decoder.decode(markerMatrix, pixelTotal);
+        //console.log(markerData);
+
+
+        // case 2
+        markerMatrix = Extractor.extract(matrix, location[i], pixelTotal);
+        markerData = Decoder2.decode(markerMatrix, pixelTotal);
+        console.log(markerData);
+        markers.push(markerData);
     }
 
-
-    //console.timeEnd("Location time ");
-    return id;
+    return markers;
 }
 
 // TO-DO For Test
-//detect('./image/img2_3.pgm', 320, 240, 7);
+//detect('./image/imgBinary4_7.pgm', 320, 240, 7);
+//detect('./image/imgBinary5_5.pgm', 320, 240, 7);
 
 exports.detect = detect;

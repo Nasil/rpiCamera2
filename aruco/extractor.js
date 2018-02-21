@@ -66,6 +66,7 @@ function times(a, b) {
         a33: a.a13 * b.a31 + a.a23 * b.a32 + a.a33 * b.a33,
     };
 }
+
 function extract(image, location, pixelTotal) {
     const pixelSize = 0;
     const centerPoint = (location.pixelSize / 2) - 2;
