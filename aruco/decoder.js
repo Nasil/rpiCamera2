@@ -1,69 +1,116 @@
 "use strict";
 
-const Dictionary = require("./dictionary");
+function countNonZero(matrix, square){
+    let src = matrix.data, height = square.height, width = square.width,
+        pos = square.x + (square.y * matrix.width),
+        span = matrix.width - width,
+        nz = 0, i, j;
 
-function decode(matrix, pixelTotal) {
-    let data = []
-
-    // TO-DO 검증용
-    for (let i = 0; i < pixelTotal; i++) {
-        for (let j = 0; j < pixelTotal; j++) {
-           data.push(matrix.get(j,i));
-       }
-       console.log(data);
-       data = [];
+    for (i = 0; i < height; ++ i){
+        for (j = 0; j < width; ++ j){
+            if ( 0 !== src[pos ++] ){
+            ++ nz;
+            }
+        }
+        pos += span;
     }
 
-    // dictionary 값 대로 읽기
-	let id = readId(matrix.data, pixelTotal);
+    return nz;
+};
+
+function hammingDistance(bits){
+    let ids = [ [1,0,0,0,0], [1,0,1,1,1], [0,1,0,0,1], [0,1,1,1,0] ], // 16, 23, 9, 14
+        dist = 0, sum, minSum, i, j, k;
+
+    for (i = 0; i < 5; ++ i){
+        minSum = Infinity;
+        for (j = 0; j < 4; ++ j){
+            sum = 0;
+            for (k = 0; k < 5; ++ k){
+                sum += bits[i][k] === ids[j][k]? 0: 1;
+            }
+            if (sum < minSum){
+                minSum = sum;
+            }
+        }
+        dist += minSum;
+    }
+
+    return dist;
+};
+
+function rotate(src){
+    let dst = [], len = src.length, i, j;
+    for (i = 0; i < len; ++ i){
+        dst[i] = [];
+        for (j = 0; j < src[i].length; ++ j){
+            dst[i][j] = src[src[i].length - j - 1][i];
+        }
+    }
+
+    return dst;
+};
+
+function readId(bits, pixelTotal) {
+    var id = 0, i, bitOne = 1, bitTwo = 3;
+
+    for (i = 0; i < pixelTotal; ++ i){
+        id <<= 1;
+        id |= bits[i][bitOne];
+        id <<= 1;
+        id |= bits[i][bitTwo];
+    }
 
     return id;
 }
 
-function findDictionaray(data) {
-    //console.log(data);
-    let dictionary = Dictionary.getDictionary();
-    let maxLength = dictionary.length, angleLength = 4;
-    for (let i = 0; i < maxLength; i++) {
-        for (let j = 0; j < angleLength; j++) {
-            if (dictionary[i][j][0] == data[0] && dictionary[i][j][1] == data[1]) {
-                if (dictionary[i][j][2] == data[2] && dictionary[i][j][3] == data[3]) {
-                    //console.log(process.memoryUsage());
-                    return {angle: j * 90, id: i};
-                }
+function decode(matrix, pixelTotal){
+    let width = (matrix.width / pixelTotal) >>> 0,
+        minZero = (width * width) >> 1,
+        bits = [], rotateList = [], distances = [],
+        square, pair, inc, i, j, dataSize = pixelTotal - 2;
+
+    // 테두리 전체가 0 인지 확인
+    for (i = 0; i < pixelTotal; ++ i){
+        inc = (0 === i || (pixelTotal-1) === i)? 1: (pixelTotal-1);
+        for (j = 0; j < pixelTotal; j += inc){
+            square = {x: j * width, y: i * width, width: width, height: width};
+            if (countNonZero(matrix, square) > minZero){
+                return false;
             }
         }
     }
 
-	return false;
-}
-
-
-function readId(bits, pixelTotal) {
-    let id = 0, bit = 0, bitData = [], i, j, cnt = 0;
-    let reverse = (bits[0] == 0 && bits[3] == 0) ? false : true;
-
-    for (i = 1; i < pixelTotal-1; ++i) {
-        for (j = 1; j < pixelTotal-1; ++j) {
-            id <<= 1;
-            bit = (reverse === true) ? 1-bits[i * pixelTotal + j] : bits[i * pixelTotal + j];
-            id |= bit;
-            cnt++;
-            if (cnt == 8) {
-                cnt = 0;
-                bitData.push(id);
-                id = 0;
-            }
+    // 테두리를 제외한 데이터를 5 * 5 배열에 0 과 1 로 표현
+    for (i = 0; i < dataSize; ++ i){
+        bits[i] = [];
+        for (j = 0; j < dataSize; ++ j){
+            square = {x: (j + 1) * width, y: (i + 1) * width, width: width, height: width};
+            bits[i][j] = countNonZero(matrix, square) > minZero? 1 : 0;
         }
     }
 
-    let lastBit = bits[bits.length - (pixelTotal + 2)];
-    if (reverse === true) {
-        lastBit = 1 - lastBit;
+    // 각도 구하기
+    rotateList[0] = bits;
+    distances[0] = hammingDistance( rotateList[0] );
+    let shortDistance = distances[0];
+    let angleIdx = 0;
+    for (i = 1; i < 4; ++ i){
+        rotateList[i] = rotate( rotateList[i - 1] );
+        distances[i] = hammingDistance( rotateList[i] );
+        if (distances[i] < shortDistance){
+            shortDistance = distances[i]; // 제일 짧은 거리
+            angleIdx = i; // 제일 짧은거리의 순번
+        }
     }
-    bitData.push(lastBit);
 
-	return findDictionaray(bitData);
-}
+    if (0 !== shortDistance){
+        return false;
+    }
+
+    // 반시계 방향 :  (4-angleIdx) * 90
+    // 시계 방향 :  angleIdx * 90
+    return {angle: angleIdx * 90, id: readId(rotateList[angleIdx], pixelTotal-2)};
+};
 
 exports.decode = decode;

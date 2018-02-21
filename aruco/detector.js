@@ -6,8 +6,6 @@ const fs = require('fs');
 const Extractor = require("./extractor");
 const Locator = require("./locator");
 const Decoder = require("./decoder");
-const Decoder2 = require("./decoder2");
-
 let matrix;
 
 const distance = (a, b) => Math.sqrt(Math.pow((b.x - a.x), 2) + Math.pow((b.y - a.y), 2));
@@ -45,7 +43,7 @@ function readImg(fileName, width, height) {
 }
 
 function detect(data, width, height, pixelTotal) {
-    let i, markerMatrix, markerData, markers = [];
+    let i, markerMatrix, markerData, markers = [], markerMatrixs = [];
     //matrix = new Matrix(width, height, readImg(data, width, height));
     matrix = new Matrix(width, height, data);
     if (matrix.length < 0) {
@@ -57,25 +55,34 @@ function detect(data, width, height, pixelTotal) {
 
     // Extract & Read
     for (let i = 0; i < location.length; i++) {
-
-        // case 1
-        //markerMatrix = Extractor.extract(matrix, location[i], pixelTotal);
-        //markerData = Decoder.decode(markerMatrix, pixelTotal);
-        //console.log(markerData);
-
-
-        // case 2
-        markerMatrix = Extractor.extract(matrix, location[i], pixelTotal);
-        markerData = Decoder2.decode(markerMatrix, pixelTotal);
-        console.log(markerData);
-        markers.push(markerData);
+        markerMatrixs = Extractor.extract(matrix, location[i], pixelTotal, true);
+        for (let j = 0; j < markerMatrixs.length; j++) {
+            markerData = Decoder.decode(markerMatrixs[j], pixelTotal);
+            if (markerData !== false) {
+                //view(markerMatrixs[0].data);
+                console.log(markerData);
+                return markerData;
+            }
+        }
     }
 
-    return markers;
+    return false;
 }
 
-// TO-DO For Test
-//detect('./image/imgBinary4_7.pgm', 320, 240, 7);
-//detect('./image/imgBinary5_5.pgm', 320, 240, 7);
+function view(matrix) {
+    let data = [];
+    for (let i = 0 ; i < 7; i++) {
+        for (let j = 0; j < 7; j++) {
+            data.push(matrix[i * 7 + j]);
+        }
+        console.log(data);
+        data = [];
+    }
+}
+
+// TO-DO For Testthreshold
+//detect('./image/imgBinary3_7.pgm', 320, 240, 7);
+//detect('./image/imgBinary2_7.pgm', 320, 240, 7);
+//detect('./image/imgBinary5_7.pgm', 320, 240, 7);
 
 exports.detect = detect;

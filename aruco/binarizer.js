@@ -1,6 +1,6 @@
 "use strict";
 
-const BitMatrix_1 = require("./BitMatrix");
+const BitMatrix = require("./bitMatrix");
 const REGION_SIZE = 8;
 const MIN_DYNAMIC_RANGE = 24;
 
@@ -60,7 +60,7 @@ function binarize(data, width, height) {
         }
     }
 
-    const binarized = BitMatrix_1.BitMatrix.createEmpty(width, height);
+    const binarized = BitMatrix.bitMatrix.createEmpty(width, height);
     for (let verticalRegion = 0; verticalRegion < verticalRegionCount; verticalRegion++) {
         for (let hortizontalRegion = 0; hortizontalRegion < horizontalRegionCount; hortizontalRegion++) {
             const left = numBetween(hortizontalRegion, 2, horizontalRegionCount - 3);

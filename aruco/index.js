@@ -5,7 +5,6 @@
 const binarizer = require("./binarizer");
 const otsu = require("./otsu");
 const detector = require("./detector");
-
 const fs = require('fs');
 const child = require('child_process');
 const v4l2camera = require('.././v4l2camera');
@@ -51,7 +50,7 @@ function main() {
 	cam.capture(function loop(sucess){
         let frame = cam.frameRaw();
         cnt++;
-        
+
         // Greyscale Image Save
         //let fileName = 'imgGrey' + cnt + '.pgm';
         //fileWrite2Pgm(fileName, frame, "P5");
@@ -61,14 +60,17 @@ function main() {
         const binarized = binarizer.binarize(frame, width, height);
 
         // Market read
+        console.time("Detect");
         const detect = detector.detect(binarized.data, width, height, pixelTotal);
+        console.timeEnd("Detect");
+        
         //console.log(detect);
 
         //--- File write New ---
         //fileName = 'imgBinary5_' + cnt + '.pgm';
         //fileWrite2Pgm(fileName, binarized.data, "P5");
-        
-        
+
+
         if (cnt == MAX_LOOP_CNT) {
             process.exit(1);
         }

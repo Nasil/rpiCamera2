@@ -1,8 +1,8 @@
 "use strict";
 
-class BitMatrix {
+class bitMatrix {
     static createEmpty(width, height) {
-        return new BitMatrix(new Uint8ClampedArray(width * height), width);
+        return new bitMatrix(new Uint8ClampedArray(width * height), width);
     }
     constructor(data, width) {
         this.width = width;
@@ -21,9 +21,6 @@ class BitMatrix {
     set(x, y, v) {
         this.data[y * this.width + x] = v ? 1 : 0;
     }
-    setReverse(x, y, v) {
-        this.data[y * this.width + x] = v ? 0 : 1;
-    }
     setRegion(left, top, width, height, v) {
         for (let y = top; y < top + height; y++) {
             for (let x = left; x < left + width; x++) {
@@ -33,4 +30,4 @@ class BitMatrix {
     }
 }
 
-exports.BitMatrix = BitMatrix;
+exports.bitMatrix = bitMatrix;

@@ -1,6 +1,6 @@
 "use strict";
 
-const BitMatrix_1 = require("./BitMatrix");
+const BitMatrix = require("./bitMatrix");
 
 function squareToQuadrilateral(p1, p2, p3, p4) {
     const dx3 = p1.x - p2.x + p3.x - p4.x;
@@ -67,13 +67,15 @@ function times(a, b) {
     };
 }
 
-function extract(image, location, pixelTotal) {
+function extract(image, location, pixelTotal, reverse) {
     const pixelSize = 0;
     const centerPoint = (location.pixelSize / 2) - 2;
     const qToS = quadrilateralToSquare({ x: pixelSize, y: pixelSize }, { x: location.dimension - pixelSize, y: pixelSize }, { x: location.dimension - pixelSize, y: location.dimension - pixelSize }, { x: pixelSize, y: location.dimension - pixelSize });
     const sToQ = squareToQuadrilateral(location.topLeft, location.topRight, location.bottomRight, location.bottomLeft);
     const transform = times(sToQ, qToS);
-    const matrix = BitMatrix_1.BitMatrix.createEmpty(location.dimension, location.dimension);
+
+
+    const matrixs = [];
     const mappingFunction = (x, y) => {
         const denominator = transform.a13 * x + transform.a23 * y + transform.a33;
         return {
@@ -82,16 +84,24 @@ function extract(image, location, pixelTotal) {
         };
     };
 
-    for (let y = 0; y < location.dimension; y++) {
-        for (let x = 0; x < location.dimension; x++) {
-            const xValue = x;
-            const yValue = y;
-            const sourcePixel = mappingFunction(xValue, yValue);
-            matrix.setReverse(x, y, image.get(Math.floor(sourcePixel.x + centerPoint), Math.floor(sourcePixel.y + centerPoint)));
+    const muxArr = [[1,1], [1,-1], [-1,1], [-1,-1]];
+    for (let i = 0; i < muxArr.length; i++) {
+        const matrix = BitMatrix.bitMatrix.createEmpty(location.dimension, location.dimension);
+        const centerPointX = muxArr[i][0] * ((location.pixelSize / 2) - 2);
+        const centerPointY = muxArr[i][1] * ((location.pixelSize / 2) - 2);
+        for (let y = 0; y < location.dimension; y++) {
+            for (let x = 0; x < location.dimension; x++) {
+                const xValue = x;
+                const yValue = y;
+                const sourcePixel = mappingFunction(xValue, yValue);
+                const pixel = image.get(Math.floor(sourcePixel.x + centerPointX), Math.floor(sourcePixel.y + centerPointY));
+                matrix.set(x, y, (reverse === false) ? 1 - pixel : pixel);
+            }
         }
+        matrixs.push(matrix);
     }
 
-    return matrix;
+    return matrixs;
 }
 
 
