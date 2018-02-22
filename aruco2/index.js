@@ -11,13 +11,17 @@ const v4l2camera = require('.././v4l2camera');
 const device = '/dev/video0';
 const util = require('util');
 const extend = require('util-extend');
+const latency = require('./latency');
+
 let cam = null;
 
 // 고정값 변경 가능
 const width = 320;
 const height = 240;
 const pixelTotal = 7;
-const MAX_LOOP_CNT = 10000;
+const MAX_LOOP_CNT = 1000;
+
+let times = [];
 
 function bufConcat(a, b) {
     var result = new Buffer(a.length + b.length)
@@ -60,15 +64,20 @@ function main() {
         const binarized = binarizer.binarize(frame, width, height);
 
         // Market read
-        console.time("Detect");
+        let startTime = Date.now();
         const detect = detector.detect(binarized.data, width, height, pixelTotal);
         if (detect !== false) console.log(detect);
-        console.timeEnd("Detect");
+        let endTime = Date.now();
+        times.push(endTime - startTime);
+        if (cnt >= 100) {
+            latency.latency(times, cnt);
+            cnt = 0;
+        }
 
         //console.log(detect);
 
         //--- File write New ---
-        //fileName = 'imgBinary5_' + cnt + '.pgm';
+        //fileName = 'imgBinary2_' + cnt + '.pgm';
         //fileWrite2Pgm(fileName, binarized.data, "P5");
 
 
