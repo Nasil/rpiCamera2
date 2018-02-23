@@ -38,9 +38,6 @@ var OPERATORS = { "sobel": {
 function gradient(frame, column, row) {
     console.time('Sobel Filter Time');
 
-    //let row = height;
-    //let column = width;
-
     var image_x = new Uint8ClampedArray(column * row);
     var image_y = new Uint8ClampedArray(column * row);
 

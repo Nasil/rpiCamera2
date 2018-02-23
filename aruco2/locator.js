@@ -270,6 +270,15 @@ function findCorners(contours, minSize, epsilon, minLength){
     return coners;
 }
 
+function getAngle(a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const rad = Math.atan2(dx, dy);
+    const degree = (rad*180)/Math.PI;
+
+    return Math.round(degree);
+}
+
 function findForward(coners, pixelTotal) {
     let len = coners.length, cnt = 0, dx1, dx2, dy1, dy2, swap, i, coner, dimension1, dimension2, pixelSize, locationTmp = [], location = [];
 
@@ -290,9 +299,10 @@ function findForward(coners, pixelTotal) {
         dimension2 = distance(coner[0], coner[2]);
         pixelSize = Math.max(Math.floor(dimension1/pixelTotal), Math.floor(dimension2/pixelTotal));
         // TODO 카메라의 높이에 따른 bitSize 정해야함
-        if (pixelSize < 5 || pixelSize > 15) {
-            continue;
-        }
+        //if (pixelSize < 5 || pixelSize > 15) {
+        //    continue;
+        //}
+
 
        locationTmp = {
             topLeft: { x: coner[3].x, y: coner[3].y},
@@ -302,6 +312,8 @@ function findForward(coners, pixelTotal) {
             pixelSize: pixelSize,
             dimension: pixelTotal,
         };
+
+        //console.log(getAngle(coner[0], coner[3]));
 
         location[cnt] = locationTmp;
         cnt++;

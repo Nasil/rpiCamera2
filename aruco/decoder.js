@@ -1,10 +1,9 @@
 "use strict";
 
 function countNonZero(matrix, square){
-    let src = matrix.data, height = square.height, width = square.width,
-        pos = square.x + (square.y * matrix.width),
-        span = matrix.width - width,
-        nz = 0, i, j;
+    const src = matrix.data, height = square.height, width = square.width,
+        span = matrix.width - width;
+    let nz = 0, i, j, pos = square.x + (square.y * matrix.width);
 
     for (i = 0; i < height; ++ i){
         for (j = 0; j < width; ++ j){
@@ -19,8 +18,8 @@ function countNonZero(matrix, square){
 };
 
 function hammingDistance(bits){
-    let ids = [ [1,0,0,0,0], [1,0,1,1,1], [0,1,0,0,1], [0,1,1,1,0] ], // 16, 23, 9, 14
-        dist = 0, sum, minSum, i, j, k;
+    const ids = [ [1,0,0,0,0], [1,0,1,1,1], [0,1,0,0,1], [0,1,1,1,0] ]; // 16, 23, 9, 14
+    let dist = 0, sum, minSum, i, j, k;
 
     for (i = 0; i < 5; ++ i){
         minSum = Infinity;
@@ -40,7 +39,8 @@ function hammingDistance(bits){
 };
 
 function rotate(src){
-    let dst = [], len = src.length, i, j;
+    const len = src.length;
+    let dst = [], i, j;
     for (i = 0; i < len; ++ i){
         dst[i] = [];
         for (j = 0; j < src[i].length; ++ j){
@@ -52,7 +52,8 @@ function rotate(src){
 };
 
 function readId(bits, pixelTotal) {
-    var id = 0, i, bitOne = 1, bitTwo = 3;
+    let id = 0, i;
+    const bitOne = 1, bitTwo = 3;
 
     for (i = 0; i < pixelTotal; ++ i){
         id <<= 1;
@@ -64,11 +65,9 @@ function readId(bits, pixelTotal) {
     return id;
 }
 
-function decode(matrix, pixelTotal){
-    let width = (matrix.width / pixelTotal) >>> 0,
-        minZero = (width * width) >> 1,
-        bits = [], rotateList = [], distances = [],
-        square, pair, inc, i, j, dataSize = pixelTotal - 2;
+function decode(matrix, pixelTotal, location){
+    const width = (matrix.width / pixelTotal) >>> 0, dataSize = pixelTotal - 2, minZero = (width * width) >> 1;
+    let bits = [], rotateList = [], distances = [], square, pair, inc, i, j, angleIdx, shortDistance;
 
     // 테두리 전체가 0 인지 확인
     for (i = 0; i < pixelTotal; ++ i){
@@ -93,8 +92,8 @@ function decode(matrix, pixelTotal){
     // 각도 구하기
     rotateList[0] = bits;
     distances[0] = hammingDistance( rotateList[0] );
-    let shortDistance = distances[0];
-    let angleIdx = 0;
+    shortDistance = distances[0];
+    angleIdx = 0;
     for (i = 1; i < 4; ++ i){
         rotateList[i] = rotate( rotateList[i - 1] );
         distances[i] = hammingDistance( rotateList[i] );
@@ -108,8 +107,13 @@ function decode(matrix, pixelTotal){
         return false;
     }
 
-    // 반시계 방향 :  (4-angleIdx) * 90
-    // 시계 방향 :  angleIdx * 90
+    let angle = angleIdx * 90;
+    if (location.forwardAngle < 45 && location.forwardAngle > 0) {
+        angle += 90;
+    }
+
+    // 반시계 방향 : (4-angleIdx) * 90
+    // 시계 방향 : angleIdx * 90
     return {angle: angleIdx * 90, id: readId(rotateList[angleIdx], pixelTotal-2)};
 };
 

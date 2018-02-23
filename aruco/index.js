@@ -11,12 +11,17 @@ const v4l2camera = require('.././v4l2camera');
 const device = '/dev/video0';
 const util = require('util');
 const extend = require('util-extend');
+const latency = require('./latency');
 
+let cam = null;
+
+// 고정값 변경 가능
 const width = 320;
 const height = 240;
 const pixelTotal = 7;
-const MAX_LOOP_CNT = 10000;
-let cam = null;
+const MAX_LOOP_CNT = 1000;
+
+let times = [];
 
 function bufConcat(a, b) {
     var result = new Buffer(a.length + b.length)
@@ -26,7 +31,6 @@ function bufConcat(a, b) {
 }
 
 function main() {
-
     try {
     	cam = new v4l2camera.Camera(device);
     } catch (err) {
@@ -52,23 +56,29 @@ function main() {
         cnt++;
 
         // Greyscale Image Save
-        //let fileName = 'imgGrey' + cnt + '.pgm';
-        //fileWrite2Pgm(fileName, frame, "P5");
+        let fileName = 'imgGrey' + cnt + '.pgm';
+        fileWrite2Pgm(fileName, frame, "P5");
 
         // Binarized
         //const otsuFrame = otsu.otsu(frame, width, height);
         const binarized = binarizer.binarize(frame, width, height);
 
-        // Market read
-        console.time("Detect");
+        // Marker detect
+        //let startTime = Date.now();
         const detect = detector.detect(binarized.data, width, height, pixelTotal);
-        console.timeEnd("Detect");
-        
+        if (detect !== false) console.log(detect);
+        //let endTime = Date.now();
+        //times.push(endTime - startTime);
+        //if (cnt >= 100) {
+        //    latency.latency(times, cnt);
+        //    cnt = 0;
+        //}
+
         //console.log(detect);
 
         //--- File write New ---
-        //fileName = 'imgBinary5_' + cnt + '.pgm';
-        //fileWrite2Pgm(fileName, binarized.data, "P5");
+        fileName = 'imgBinary3_' + cnt + '.pgm';
+        fileWrite2Pgm(fileName, binarized.data, "P5");
 
 
         if (cnt == MAX_LOOP_CNT) {

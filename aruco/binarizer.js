@@ -1,7 +1,7 @@
 "use strict";
 
 const BitMatrix = require("./bitMatrix");
-const REGION_SIZE = 8;
+const REGION_SIZE = 8; // 8 * 8 비트씩 데이터 확인
 const MIN_DYNAMIC_RANGE = 24;
 
 function numBetween(value, min, max) {

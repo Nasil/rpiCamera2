@@ -21,6 +21,7 @@ const height = 240;
 const pixelTotal = 7;
 const MAX_LOOP_CNT = 1000;
 
+let detectNum = 0;
 let times = [];
 
 function bufConcat(a, b) {
@@ -64,11 +65,20 @@ function main() {
         const binarized = binarizer.binarize(frame, width, height);
 
         // Market read
-        let startTime = Date.now();
+        //let startTime = Date.now();
         const detect = detector.detect(binarized.data, width, height, pixelTotal);
-        if (detect !== false) console.log(detect);
-        let endTime = Date.now();
-        times.push(endTime - startTime);
+        if (detect === false) { 
+            detectNum = 0;
+        } else {
+            detectNum = 1;
+        }
+        times.push(detectNum);
+        if (detect !== false) {
+        //    console.log(detect);
+        }
+
+        //let endTime = Date.now();
+        //times.push(endTime - startTime);
         if (cnt >= 100) {
             latency.latency(times, cnt);
             cnt = 0;

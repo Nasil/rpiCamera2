@@ -3,7 +3,8 @@
 const distance = (a, b) => Math.sqrt(Math.pow((b.x - a.x), 2) + Math.pow((b.y - a.y), 2));
 
 const findContours = function(imageSrc, binary){
-  let width = imageSrc.width, height = imageSrc.height, contours = [], src, deltas, pos, pix, nbd, outer, hole, i, j;
+  const width = imageSrc.width, height = imageSrc.height;
+  let contours = [], src, deltas, pos, pix, nbd, outer, hole, i, j;
 
   src = binaryBorder(imageSrc, binary);
   deltas = neighborhoodDeltas(width + 2);
@@ -38,9 +39,7 @@ const findContours = function(imageSrc, binary){
 
 const borderFollowing = function(src, pos, nbd, point, hole, deltas){
     let contour = [], pos1, pos3, pos4, s, s_end, s_prev;
-
     contour.hole = hole;
-
     s = s_end = hole? 0: 4;
     do {
         s = (s - 1) & 7;
@@ -254,12 +253,13 @@ function binaryBorder(imageSrc, dst){
 };
 
 function findCorners(contours, minSize, epsilon, minLength){
-    let coners = [], len = contours.length, contour, poly, i;
-    let polys = [];
+    let coners = [], len = contours.length, contour, poly, i, polys = [];
+
     for (i = 0; i < len; ++ i){
         contour = contours[i];
         if (contour.length >= minSize){
-            let poly = approxPolyDP(contour, contour.length * epsilon);
+            // 사각형으로 근사화 함
+            poly = approxPolyDP(contour, contour.length * epsilon);
             polys.push(poly);
             if ( (4 === poly.length) && ( isContourConvex(poly) ) ){
                 if ( minEdgeLength(poly) >= minLength){
@@ -272,40 +272,53 @@ function findCorners(contours, minSize, epsilon, minLength){
     return coners;
 }
 
-function getOnePixelSize(coner, pixelTotal) {
-    let dimension1 = distance(coner[1], coner[3]);
-    let dimension2 = distance(coner[0], coner[2]);
+// Angle between two points
+function getAngle(a, b){
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const rad= Math.atan2(dx, dy);
+    const degree = (rad*180)/Math.PI ;
 
-    return Math.max(Math.floor(dimension1/pixelTotal), Math.floor(dimension2/pixelTotal));
+    if (dy < 0) {
+        return (-1) * Math.round(degree);
+    }
+    
+    return Math.round(degree);
 }
 
-function findForward(coners, pixelTotal) {
-    let len = coners.length, cnt = 0, dx1, dx2, dy1, dy2, swap, i, dimension1, dimension2, pixelSize, locationTmp = [], location = [];
-    
+function findDirection(coners, pixelTotal) {
+    const len = coners.length;
+    let cnt = 0, dx1, dx2, dy1, dy2, swap, i, coner, dimension1, dimension2, pixelSize, locationTmp = [], location = [];
+
     for (i = 0; i < len; ++ i){
-        dx1 = coners[i][1].x - coners[i][0].x;
-        dy1 = coners[i][1].y - coners[i][0].y;
-        dx2 = coners[i][2].x - coners[i][0].x;
-        dy2 = coners[i][2].y - coners[i][0].y;
+        coner = coners[i];
 
+        dx1 = coner[1].x - coner[0].x;
+        dy1 = coner[1].y - coner[0].y;
+        dx2 = coner[2].x - coner[0].x;
+        dy2 = coner[2].y - coner[0].y;
         if ( (dx1 * dy2 - dy1 * dx2) < 0){
-          swap = coners[i][1];
-          coners[i][1] = coners[i][3];
-          coners[i][3] = swap;
+          swap = coner[1];
+          coner[1] = coner[3];
+          coner[3] = swap;
         }
 
-        let pixelSize = getOnePixelSize(coners[i], pixelTotal);
+        // 한 칸당 들어가는 픽셀수
+        dimension1 = distance(coner[1], coner[3]);
+        dimension2 = distance(coner[0], coner[2]);
+        pixelSize = Math.max(Math.floor(dimension1/pixelTotal), Math.floor(dimension2/pixelTotal));
         // TODO 카메라의 높이에 따른 bitSize 정해야함
-        if (pixelSize < 5 || pixelSize > 15) {
-            continue;
-        }
+        //if (pixelSize < 5 || pixelSize > 15) {
+        //    continue;
+        //}
 
-       locationTmp = {
-            topLeft: { x: coners[i][3].x, y: coners[i][3].y},
-            topRight: { x: coners[i][0].x, y: coners[i][0].y},
-            bottomRight: { x: coners[i][1].x, y: coners[i][1].y},
-            bottomLeft: { x: coners[i][2].x, y: coners[i][2].y},
-            pixelSize: pixelSize,
+        locationTmp = {
+            topRight: { x: coner[0].x, y: coner[0].y},
+            bottomRight: { x: coner[1].x, y: coner[1].y},
+            bottomLeft: { x: coner[2].x, y: coner[2].y},
+            topLeft: { x: coner[3].x, y: coner[3].y},
+            forwardAngle : getAngle(coner[0], coner[3]),
+            pixelSize,
             dimension: pixelTotal,
         };
 
@@ -319,14 +332,13 @@ function findForward(coners, pixelTotal) {
 function getLocation(frameBinary, pixelTotal) {
     let binary = [];
 
-    // 바이너리 이미지에서 1인 데이터 찾기
+    // 바이너리 이미지에서 외곽선이 있는 데이터 전부 찾기
     let contours = findContours(frameBinary, binary);
-    // 모서리 후보 찾기
+    // 모서리 후보 찾기 (minSize, epsilon, minLength)
     let coners = findCorners(contours, frameBinary.width * 0.20, 0.05, 10);
-    // 정방향 위치를 알고 반시계 방향으로 돌리기
-    coners = findForward(coners, pixelTotal);
 
-    return coners;
+    // 각 코너의 방향 확인
+    return findDirection(coners, pixelTotal);
 }
 
 exports.location = getLocation;

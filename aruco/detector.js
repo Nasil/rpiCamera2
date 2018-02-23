@@ -6,35 +6,21 @@ const fs = require('fs');
 const Extractor = require("./extractor");
 const Locator = require("./locator");
 const Decoder = require("./decoder");
-let matrix;
+const BitMatrix = require("./bitMatrix");
 
 const distance = (a, b) => Math.sqrt(Math.pow((b.x - a.x), 2) + Math.pow((b.y - a.y), 2));
 
-class Matrix {
-  constructor(width, height, data) {
-    this.width = width;
-    this.height = height;
-    this.data = data;
-  }
-  get(x, y) {
-    return this.data[y * this.width + x];
-  }
-  set(x, y, value) {
-    this.data[y * this.width + x] = value;
-  }
-}
-
 function readImg(fileName, width, height) {
     console.log("=================" + fileName + "==============")
-    let frame = fs.readFileSync(fileName);
-    let bitmapSize = width * height;
-    let frameBinary = new Uint8ClampedArray(bitmapSize);
-    let length = frame.length;
-    let startInx = length - (bitmapSize);
-    let j = 0;
+    const frame = fs.readFileSync(fileName);
+    const bitmapSize = width * height;
+    const frameBinary = new Uint8ClampedArray(bitmapSize);
+    const length = frame.length;
+    const startInx = length - (bitmapSize);
+    let i, j = 0, val;
 
-    for (var i = startInx; i < length; i++) {
-        let val = (frame[i] === 255) ? 1 : 0;
+    for (i = startInx; i < length; i++) {
+        val = (frame[i] === 255) ? 1 : 0;
         frameBinary[j] = val;
         j++;
     }
@@ -43,24 +29,27 @@ function readImg(fileName, width, height) {
 }
 
 function detect(data, width, height, pixelTotal) {
-    let i, markerMatrix, markerData, markers = [], markerMatrixs = [];
-    //matrix = new Matrix(width, height, readImg(data, width, height));
-    matrix = new Matrix(width, height, data);
+    let i, j, matrix, location, markerMatrix, markerData, markers = [], markerMatrixs = [];
+
+    //matrix = new BitMatrix.bitMatrix(readImg(data, width, height), width, height);
+    matrix = new BitMatrix.bitMatrix(data, width, height);
     if (matrix.length < 0) {
-        return;
+        return false;
     }
 
     // Find Corner Point
-    const location = Locator.location(matrix, pixelTotal);
+    location = Locator.location(matrix, pixelTotal);
+    if (location.length < 0) {
+        return false;
+    }
 
-    // Extract & Read
-    for (let i = 0; i < location.length; i++) {
-        markerMatrixs = Extractor.extract(matrix, location[i], pixelTotal, true);
-        for (let j = 0; j < markerMatrixs.length; j++) {
-            markerData = Decoder.decode(markerMatrixs[j], pixelTotal);
+    // Extract & Read Marker
+    for (i = 0; i < location.length; i++) {
+        markerMatrixs = Extractor.extract(matrix, location[i], pixelTotal, false);
+        for (j = 0; j < markerMatrixs.length; j++) {
+            markerData = Decoder.decode(markerMatrixs[j], pixelTotal, location[i]);
             if (markerData !== false) {
-                //view(markerMatrixs[0].data);
-                console.log(markerData);
+                console.log(location[i]);
                 return markerData;
             }
         }
@@ -69,20 +58,8 @@ function detect(data, width, height, pixelTotal) {
     return false;
 }
 
-function view(matrix) {
-    let data = [];
-    for (let i = 0 ; i < 7; i++) {
-        for (let j = 0; j < 7; j++) {
-            data.push(matrix[i * 7 + j]);
-        }
-        console.log(data);
-        data = [];
-    }
-}
-
-// TO-DO For Testthreshold
-//detect('./image/imgBinary3_7.pgm', 320, 240, 7);
-//detect('./image/imgBinary2_7.pgm', 320, 240, 7);
-//detect('./image/imgBinary5_7.pgm', 320, 240, 7);
+// TO-DO For Test
+//detect('./image/imgBinary_7.pgm', 320, 240, 7);
+//detect('./image/imgBinary1_7.pgm', 320, 240, 7);
 
 exports.detect = detect;

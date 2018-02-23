@@ -119,7 +119,7 @@ function otsu(frame, width, height)
 
     let classes = 2;
     let thresholds = otsuExec(hist, classes);
-	
+
     console.log(thresholds);
 
     var dstData = img.data;

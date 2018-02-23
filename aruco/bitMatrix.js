@@ -4,9 +4,9 @@ class bitMatrix {
     static createEmpty(width, height) {
         return new bitMatrix(new Uint8ClampedArray(width * height), width);
     }
-    constructor(data, width) {
+    constructor(data, width, height) {
         this.width = width;
-        this.height = data.length / width;
+        this.height = height;
         this.data = data;
     }
     get(x, y) {
