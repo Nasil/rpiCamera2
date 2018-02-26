@@ -272,20 +272,6 @@ function findCorners(contours, minSize, epsilon, minLength){
     return coners;
 }
 
-// Angle between two points
-function getAngle(a, b){
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const rad= Math.atan2(dx, dy);
-    const degree = (rad*180)/Math.PI ;
-
-    if (dy < 0) {
-        return (-1) * Math.round(degree);
-    }
-    
-    return Math.round(degree);
-}
-
 function findDirection(coners, pixelTotal) {
     const len = coners.length;
     let cnt = 0, dx1, dx2, dy1, dy2, swap, i, coner, dimension1, dimension2, pixelSize, locationTmp = [], location = [];
@@ -317,7 +303,6 @@ function findDirection(coners, pixelTotal) {
             bottomRight: { x: coner[1].x, y: coner[1].y},
             bottomLeft: { x: coner[2].x, y: coner[2].y},
             topLeft: { x: coner[3].x, y: coner[3].y},
-            forwardAngle : getAngle(coner[0], coner[3]),
             pixelSize,
             dimension: pixelTotal,
         };

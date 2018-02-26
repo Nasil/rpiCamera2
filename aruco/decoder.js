@@ -65,6 +65,11 @@ function readId(bits, pixelTotal) {
     return id;
 }
 
+function getAngle(p2, p1){
+    let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+    return angle;
+}
+
 function decode(matrix, pixelTotal, location){
     const width = (matrix.width / pixelTotal) >>> 0, dataSize = pixelTotal - 2, minZero = (width * width) >> 1;
     let bits = [], rotateList = [], distances = [], square, pair, inc, i, j, angleIdx, shortDistance;
@@ -107,14 +112,21 @@ function decode(matrix, pixelTotal, location){
         return false;
     }
 
-    let angle = angleIdx * 90;
-    if (location.forwardAngle < 45 && location.forwardAngle > 0) {
-        angle += 90;
-    }
 
-    // 반시계 방향 : (4-angleIdx) * 90
-    // 시계 방향 : angleIdx * 90
-    return {angle: angleIdx * 90, id: readId(rotateList[angleIdx], pixelTotal-2)};
+    
+    let angle = angleIdx * 90;
+    const forwardAngle = getAngle(location.topRight, location.topLeft);
+    const sideAngle = getAngle(location.bottomRight, location.topRight);
+    if (Math.min(Math.abs(forwardAngle), Math.abs(sideAngle)) < 5) {
+        // 정방향
+        console.log("Forward!");
+    }
+    if (sideAngle > 0 && sideAngle < 45) {
+        angle = (angleIdx === 3) ? 0 : (angleIdx + 1) * 90;
+    }
+    
+	// 시계 방향 : angleIdx * 90
+    return {angle: angle, id: readId(rotateList[angleIdx], pixelTotal-2)};
 };
 
 exports.decode = decode;

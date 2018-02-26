@@ -19,7 +19,7 @@ let cam = null;
 const width = 320;
 const height = 240;
 const pixelTotal = 7;
-const MAX_LOOP_CNT = 1000;
+const MAX_LOOP_CNT = 5;
 
 let times = [];
 
@@ -77,8 +77,8 @@ function main() {
         //console.log(detect);
 
         //--- File write New ---
-        fileName = 'imgBinary3_' + cnt + '.pgm';
-        fileWrite2Pgm(fileName, binarized.data, "P5");
+        //fileName = 'imgBinary3_' + cnt + '.pgm';
+        //fileWrite2Pgm(fileName, binarized.data, "P5");
 
 
         if (cnt == MAX_LOOP_CNT) {

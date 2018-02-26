@@ -49,7 +49,6 @@ function detect(data, width, height, pixelTotal) {
         for (j = 0; j < markerMatrixs.length; j++) {
             markerData = Decoder.decode(markerMatrixs[j], pixelTotal, location[i]);
             if (markerData !== false) {
-                console.log(location[i]);
                 return markerData;
             }
         }
