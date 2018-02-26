@@ -67,7 +67,7 @@ function readId(bits, pixelTotal) {
 
 function getAngle(p2, p1){
     let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
-    return angle;
+    return Math.abs(angle);
 }
 
 function decode(matrix, pixelTotal, location){
@@ -117,14 +117,16 @@ function decode(matrix, pixelTotal, location){
     let angle = angleIdx * 90;
     const forwardAngle = getAngle(location.topRight, location.topLeft);
     const sideAngle = getAngle(location.bottomRight, location.topRight);
-    if (Math.min(Math.abs(forwardAngle), Math.abs(sideAngle)) < 5) {
+    if (Math.min(forwardAngle, sideAngle) < 5) {
         // 정방향
         console.log("Forward!");
     }
-    if (sideAngle > 0 && sideAngle < 45) {
+    
+    // 각도 보정
+    if (forwardAngle > sideAngle && sideAngle <45) {
         angle = (angleIdx === 3) ? 0 : (angleIdx + 1) * 90;
     }
-    
+
 	// 시계 방향 : angleIdx * 90
     return {angle: angle, id: readId(rotateList[angleIdx], pixelTotal-2)};
 };

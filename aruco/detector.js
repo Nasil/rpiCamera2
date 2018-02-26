@@ -45,7 +45,7 @@ function detect(data, width, height, pixelTotal) {
 
     // Extract & Read Marker
     for (i = 0; i < location.length; i++) {
-        markerMatrixs = Extractor.extract(matrix, location[i], pixelTotal, false);
+        markerMatrixs = Extractor.extract(matrix, location[i], pixelTotal, true);
         for (j = 0; j < markerMatrixs.length; j++) {
             markerData = Decoder.decode(markerMatrixs[j], pixelTotal, location[i]);
             if (markerData !== false) {

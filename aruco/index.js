@@ -19,7 +19,7 @@ let cam = null;
 const width = 320;
 const height = 240;
 const pixelTotal = 7;
-const MAX_LOOP_CNT = 5;
+const MAX_LOOP_CNT = 50000;
 
 let times = [];
 
@@ -56,8 +56,8 @@ function main() {
         cnt++;
 
         // Greyscale Image Save
-        let fileName = 'imgGrey' + cnt + '.pgm';
-        fileWrite2Pgm(fileName, frame, "P5");
+        //let fileName = 'imgGrey' + cnt + '.pgm';
+        //fileWrite2Pgm(fileName, frame, "P5");
 
         // Binarized
         //const otsuFrame = otsu.otsu(frame, width, height);
@@ -77,7 +77,7 @@ function main() {
         //console.log(detect);
 
         //--- File write New ---
-        //fileName = 'imgBinary3_' + cnt + '.pgm';
+        //fileName = 'imgBinaryCorner_' + cnt + '.pgm';
         //fileWrite2Pgm(fileName, binarized.data, "P5");
 
 
